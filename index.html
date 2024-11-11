@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tirage au sort de couleurs de Dragibus</title>
+  <style>
+    body {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      font-family: Arial, sans-serif;
+      background-color: #f3f3f3;
+      padding: 20px;
+    }
+    h1 {
+      color: #333;
+      font-size: 28px; /* Réduire la taille du titre */
+    }
+    #result {
+      font-size: 18px; /* Réduire la taille du texte des résultats */
+      margin-top: 20px;
+    }
+    button {
+      padding: 8px 16px; /* Réduire la taille des boutons */
+      font-size: 14px;
+      cursor: pointer;
+      margin-top: 20px;
+      border: none;
+      background-color: #4CAF50;
+      color: white;
+      border-radius: 5px;
+    }
+    button:disabled {
+      background-color: #ccc;
+      cursor: not-allowed;
+    }
+    .dragibus {
+      width: 80px; /* Réduire la taille des boules Dragibus */
+      height: 80px;
+      border-radius: 50%;
+      display: inline-block;
+      text-align: center;
+      line-height: 80px;
+      font-weight: bold;
+      color: white;
+      font-size: 18px; /* Réduire la taille du texte dans la boule */
+      margin: 8px;
+      opacity: 0;
+      transform: translateY(100px);
+      animation: tirage-animation 0.8s ease-out forwards;
+      box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.3);
+    }
+    @keyframes tirage-animation {
+      0% { transform: translateY(100px); opacity: 0; }
+      60% { transform: translateY(-20px); opacity: 1; }
+      100% { transform: translateY(0); opacity: 1; }
+    }
+    #historique {
+      display: flex;
+      flex-direction: column;
+      margin-top: 20px;
+      gap: 15px; /* Réduire l'écart entre les tours */
+      width: 100%;
+      max-width: 900px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    .tour {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-around;
+    }
+    .participant {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 15px; /* Réduire le padding des participants */
+      border: 2px solid #ddd;
+      border-radius: 10px;
+      width: 100px; /* Réduire la largeur des participants */
+      background-color: #fff;
+      box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+    }
+    .participant-name {
+      margin-top: 12px; /* Réduire l'espacement entre la boule et le nom */
+      font-size: 14px; /* Réduire la taille du texte du nom des participants */
+      font-weight: bold;
+      text-align: center;
+    }
+    #tour-counter {
+      margin-top: 15px; /* Réduire l'espacement pour le compteur */
+      font-size: 16px; /* Réduire la taille du texte du compteur */
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+  <h1>Tirage au sort de couleurs de Dragibus</h1>
+  <div id="result">Cliquez sur "Tirer un Dragibus" pour commencer.</div>
+  <button id="tirageBtn" onclick="lancerTirage()">Tirer un Dragibus</button>
+  <div id="tour-counter">Tour : 1</div>
+  <div id="historique"></div>
+
+  <script>
+    const couleursPositives = [
+      { couleur: "rose", hex: "#FF66B2" },
+      { couleur: "jaune", hex: "#FFD700" },
+      { couleur: "vert", hex: "#32CD32" }
+    ];
+    const couleursNegatives = [
+      { couleur: "rouge", hex: "#FF4500" },
+      { couleur: "noir", hex: "#000000" },
+      { couleur: "bleu", hex: "#1E90FF" }
+    ];
+    const participants = [
+      "Eric", "Réginald", "Emmanuel", "Marianne", "Léa", "Sylvain", "Pascal", "Guillaume", "Benjamin V.", 
+      "Benjamin B.", "Maxime", "Brendan", "Tiphaine", "Pierre", "Elise", "Vincent", "Florian", 
+      "Roman", "Nicolas", "Arthur", "Christophe", "Sébastien", "Aurélie", "Gaël"
+    ];
+
+    let tirageCount = 0;
+    const maxTirages = 3;
+    const historiqueTirages = {};
+
+    // Initialisation des résultats pour chaque participant
+    participants.forEach(participant => {
+      historiqueTirages[participant] = [];
+    });
+
+    function getRandomColor(colors) {
+      return colors[Math.floor(Math.random() * colors.length)];
+    }
+
+    function tirerDragibus(participant) {
+      const previousColors = historiqueTirages[participant];
+      let couleur;
+
+      // Tour 1 : Assigner une couleur aléatoire (positive ou négative)
+      if (tirageCount === 0) {
+        couleur = getRandomColor([...couleursPositives, ...couleursNegatives]);
+      }
+      
+      // Tour 2 : Assigner une couleur opposée à la précédente
+      else if (tirageCount === 1) {
+        const lastColor = previousColors[0];
+        const isPositive = couleursPositives.some(color => color.couleur === lastColor.couleur);
+        couleur = getRandomColor(isPositive ? couleursNegatives : couleursPositives);
+      }
+      
+      // Tour 3 : Assigner une couleur aléatoire sans contrainte
+      else {
+        couleur = getRandomColor([...couleursPositives, ...couleursNegatives]);
+      }
+
+      historiqueTirages[participant].push(couleur);
+      return couleur;
+    }
+
+    function afficherResultats() {
+      const historiqueContainer = document.getElementById("historique");
+      historiqueContainer.innerHTML = ""; // Supprimer les résultats précédents
+
+      const tourDiv = document.createElement("div");
+      tourDiv.className = "tour";
+      
+      participants.forEach(participant => {
+        const color = historiqueTirages[participant][tirageCount];
+        const participantDiv = document.createElement("div");
+        participantDiv.className = "participant";
+        
+        // Création du Dragibus en forme de cercle
+        const dragibus = document.createElement("div");
+        dragibus.className = "dragibus";
+        dragibus.style.backgroundColor = color.hex;
+        dragibus.textContent = color.couleur.charAt(0).toUpperCase() + color.couleur.slice(1);
+
+        // Ajouter le nom du participant sous la boule Dragibus
+        const name = document.createElement("div");
+        name.className = "participant-name";
+        name.textContent = participant;
+
+        participantDiv.appendChild(dragibus);
+        participantDiv.appendChild(name);
+        tourDiv.appendChild(participantDiv);
+      });
+
+      historiqueContainer.appendChild(tourDiv);
+    }
+
+    function lancerTirage() {
+      if (tirageCount < maxTirages) {
+        // Mettre à jour le compteur avant de tirer
+        document.getElementById("tour-counter").textContent = `Tour : ${tirageCount + 1}`;
+
+        participants.forEach(participant => {
+          tirerDragibus(participant);
+        });
+
+        afficherResultats();
+
+        tirageCount++;
+
+        if (tirageCount >= maxTirages) {
+          document.getElementById("tirageBtn").disabled = true;
+          document.getElementById("result").textContent = `Tirages terminés.`;
+        } else {
+          // Mettre à jour le message pour chaque tour
+          if (tirageCount === 1) {
+            document.getElementById("result").textContent = "Tour 2 : Cliquez pour le tirage suivant.";
+          } else if (tirageCount === 2) {
+            document.getElementById("result").textContent = "Tour 3 : Cliquez pour le tirage suivant.";
+          }
+        }
+      }
+    }
+  </script>
+</body>
+</html>
