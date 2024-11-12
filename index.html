@@ -15,14 +15,14 @@
     }
     h1 {
       color: #333;
-      font-size: 28px; /* Réduire la taille du titre */
+      font-size: 28px;
     }
     #result {
-      font-size: 18px; /* Réduire la taille du texte des résultats */
+      font-size: 18px;
       margin-top: 20px;
     }
     button {
-      padding: 8px 16px; /* Réduire la taille des boutons */
+      padding: 8px 16px;
       font-size: 14px;
       cursor: pointer;
       margin-top: 20px;
@@ -36,7 +36,7 @@
       cursor: not-allowed;
     }
     .dragibus {
-      width: 80px; /* Réduire la taille des boules Dragibus */
+      width: 80px;
       height: 80px;
       border-radius: 50%;
       display: inline-block;
@@ -44,7 +44,7 @@
       line-height: 80px;
       font-weight: bold;
       color: white;
-      font-size: 18px; /* Réduire la taille du texte dans la boule */
+      font-size: 18px;
       margin: 8px;
       opacity: 0;
       transform: translateY(100px);
@@ -60,7 +60,7 @@
       display: flex;
       flex-direction: column;
       margin-top: 20px;
-      gap: 15px; /* Réduire l'écart entre les tours */
+      gap: 15px;
       width: 100%;
       max-width: 900px;
       margin-left: auto;
@@ -75,22 +75,22 @@
       display: flex;
       flex-direction: column;
       align-items: center;
-      padding: 15px; /* Réduire le padding des participants */
+      padding: 15px;
       border: 2px solid #ddd;
       border-radius: 10px;
-      width: 100px; /* Réduire la largeur des participants */
+      width: 100px;
       background-color: #fff;
       box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
     }
     .participant-name {
-      margin-top: 12px; /* Réduire l'espacement entre la boule et le nom */
-      font-size: 14px; /* Réduire la taille du texte du nom des participants */
+      margin-top: 12px;
+      font-size: 14px;
       font-weight: bold;
       text-align: center;
     }
     #tour-counter {
-      margin-top: 15px; /* Réduire l'espacement pour le compteur */
-      font-size: 16px; /* Réduire la taille du texte du compteur */
+      margin-top: 15px;
+      font-size: 16px;
       font-weight: bold;
     }
   </style>
@@ -101,6 +101,7 @@
   <button id="tirageBtn" onclick="lancerTirage()">Tirer un Dragibus</button>
   <div id="tour-counter">Tour : 1</div>
   <div id="historique"></div>
+  <button id="rejouerBtn" onclick="rejouer()" style="display:none;">Rejouer</button> <!-- Nouveau bouton -->
 
   <script>
     const couleursPositives = [
@@ -120,7 +121,7 @@
     ];
 
     let tirageCount = 0;
-    const maxTirages = 3;
+    const maxTirages = 2; // Tour max est 2 (on retire le Tour 3)
     const historiqueTirages = {};
 
     // Initialisation des résultats pour chaque participant
@@ -146,11 +147,6 @@
         const lastColor = previousColors[0];
         const isPositive = couleursPositives.some(color => color.couleur === lastColor.couleur);
         couleur = getRandomColor(isPositive ? couleursNegatives : couleursPositives);
-      }
-      
-      // Tour 3 : Assigner une couleur aléatoire sans contrainte
-      else {
-        couleur = getRandomColor([...couleursPositives, ...couleursNegatives]);
       }
 
       historiqueTirages[participant].push(couleur);
@@ -204,15 +200,28 @@
         if (tirageCount >= maxTirages) {
           document.getElementById("tirageBtn").disabled = true;
           document.getElementById("result").textContent = `Tirages terminés.`;
+          document.getElementById("rejouerBtn").style.display = "block"; // Afficher le bouton "Rejouer"
         } else {
           // Mettre à jour le message pour chaque tour
           if (tirageCount === 1) {
             document.getElementById("result").textContent = "Tour 2 : Cliquez pour le tirage suivant.";
-          } else if (tirageCount === 2) {
-            document.getElementById("result").textContent = "Tour 3 : Cliquez pour le tirage suivant.";
           }
         }
       }
+    }
+
+    // Fonction pour relancer un nouveau tirage complet
+    function rejouer() {
+      tirageCount = 0; // Réinitialiser le compteur de tirages
+      participants.forEach(participant => {
+        historiqueTirages[participant] = []; // Réinitialiser les résultats des participants
+      });
+
+      document.getElementById("tirageBtn").disabled = false; // Activer le bouton de tirage
+      document.getElementById("result").textContent = "Cliquez sur 'Tirer un Dragibus' pour commencer.";
+      document.getElementById("rejouerBtn").style.display = "none"; // Cacher le bouton "Rejouer"
+      document.getElementById("tour-counter").textContent = "Tour : 1"; // Réinitialiser le compteur de tours
+      document.getElementById("historique").innerHTML = ""; // Effacer l'historique
     }
   </script>
 </body>
